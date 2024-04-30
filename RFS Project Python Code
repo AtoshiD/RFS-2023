@@ -1,0 +1,94 @@
+import matplotlib.pyplot as plt # Importera biblioteket matplotlib.pyplot som plt
+import numpy as np
+import math
+
+f = open('projectmars.txt', 'r') # Öppna filen "RFS.txt" i D:-disken (SD-kortet) i read-läge
+f.readline() # Läs första raden och släng denna
+
+
+humidity, temperature, pressure, height, time = ([] for i in range(5)) ## Skapa fyra stycken, tomma listor
+
+
+for line in f.readlines(): # Iterera över data genom att läsa av den rad för rad
+   line = line[:-2] # Ta bort de två sista karaktärerna
+   tid, t, x, y, z = line.split(',') # Dela upp datan i olika kolumner mellan kommatecknen
+   humidity.append(float(t)) # Lägg till datan i varje lista, float(t) konverterar variabeln t till ett flyttal (decimaltal) från en teckensträng
+   temperature.append(float(x))
+   pressure.append(float(y))
+   height.append(float(z))
+   time.append(float(tid))
+
+
+
+f.close() # Stänger filen för att minska dataanvändningen
+
+temp=np.array(temperature)
+Temp = temp-273.15
+
+hei=np.array(height)
+Hei=hei-36.5
+
+np.corrcoef(humidity, Hei)
+np.corrcoef(temperature, Hei)
+np.corrcoef(temperature, humidity)
+
+print(np.corrcoef(humidity, Hei))
+print(np.corrcoef(temperature, Hei))
+print(np.corrcoef(temperature, humidity))
+
+
+
+press=np.array(pressure)
+ekv1 = ((press*0.000504)/(temp*8.3145))
+print(ekv1)
+
+minvalue=np.min(ekv1)
+print(minvalue)
+maxvalue=np.max(ekv1)
+print(maxvalue)
+
+ekv2=(((maxvalue-minvalue)/maxvalue)*100)
+print(ekv2)
+
+
+fig, axs = plt.subplots(2, 3, figsize=(15, 8)) # Konstruerar ett 2 x 2 rutnät med mindre subplots
+plt.subplots_adjust(hspace=0.5)
+plt.subplots_adjust(wspace=0.5)
+fig.suptitle('MARS resultat')
+
+for i in [0, 1]:
+   for j in [0, 1, 2]:
+      axs[i, j].tick_params(axis='x', labelrotation=45)
+
+axs[0,0].scatter(Hei, humidity, c=time) # Plotar data där 'time' är x-värden och 'xList' är y-värden
+axs[0,0].set_title('Humidity to Height') # Sätter figurrubriken till 'Acceleration in x'
+axs[0,0].set_ylabel('Humidity [Rh%]')
+axs[0,0].set_xlabel('Height [m]')
+axs[0,1].scatter(Hei, Temp, c=time)
+axs[0,1].set_title('Temperature to Height')
+axs[0,1].set_ylabel('Temperature [K]')
+axs[0,1].set_xlabel('Height [m]')
+axs[1,0].scatter(Temp, humidity, c=time)
+axs[1,0].set_title('Temperature to Humidity')
+axs[1,0].set_ylabel('Humidity [Rh%]')
+axs[1,0].set_xlabel('Temperature [K]')
+axs[1,1].plot(np.array(time)/1000,ekv1)
+axs[1,1].set_title('Time to The Amount of Substance')
+axs[1,1].set_ylabel('The Amount of Substance [Mol]')
+axs[1,1].set_xlabel('Time [s]')
+axs[0,2].plot(np.array(time)/1000, Hei)
+axs[0,2].set_title("Time to Height")
+axs[0,2].set_ylabel('Height [m]')
+axs[0,2].set_xlabel('Time [s]')
+
+
+axs[1, 2].text(-0.87, -.20, "M.A.R.S", fontsize=45)
+axs[1, 2].set_xlim(-1, 1)
+axs[1, 2].set_ylim(-1, 1)
+axs[1, 2].set_xticks([])
+axs[1, 2].set_yticks([])
+
+
+
+plt.show() # Visar de figurer vi konstruerat
+#plt.savefig("MARS.jpg", format='jpg')
